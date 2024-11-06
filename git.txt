@@ -1,0 +1,29 @@
+windows
+基础知识：
+
+了解Git的基本工作原理和版本控制的基本概念。
+仓库管理：
+
+能够初始化一个新的Git仓库（git init）。
+能够克隆远程仓库到本地（git clone）。
+文件跟踪：
+
+能够添加文件到Git的暂存区（git add）。
+能够提交更改到本地仓库（git commit -m "commit message"）。
+分支与合并：
+
+能够创建新的分支（git branch）。
+能够切换分支（git checkout）。
+能够将分支推送到远程仓库（git push）。
+合并分支 (git merge )
+远程仓库协作：
+
+能够理解和解决简单的SSH密钥问题。
+能够将更改推送到远程分支并与远程仓库同步。
+状态检查：
+
+能够使用git status命令来检查仓库的状态。
+历史查看：
+
+git config --global http.lowSpeedLimit 0
+git config --global http.lowSpeedTime 999999
