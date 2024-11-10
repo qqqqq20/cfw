@@ -1,0 +1,464 @@
+# 创建一个Helloword.sh 文件
+[root@aly_server01~]# touch Helloword.sh
+
+# 编辑Helloword.sh 文件
+[root@aly_server01~]# vim Helloword.sh
+[root@aly_server01~]# cat Helloword.sh 
+#!/bin/bash
+# This is ower first shell
+# by author rivers 2021.09
+echo "hello world"
+[root@aly_server01~]# 
+[root@aly_server01~]# ll Helloword.sh 
+-rw-r--r-- 1 root root 85 Sep 20 22:26 Helloword.sh
+
+# 赋予执行权限
+[root@aly_server01~]# chmod o+x Helloword.sh 
+
+# 运行helloword.sh 脚本
+[root@aly_server01~]# ./Helloword.sh 
+hello world
+[root@aly_server01~]#
+
+2.1 shell环境变量
+
+# 什么是变量
+很多人可能会说，可以变化的量就是变量。但是发现很多汉语意思很强大，你看的懂的字，却不一定可以理解它的意思。这里你可以理解为 a = 1,同时还可以 a =2、a = 3 ，不同的值都可以复制给同一个 变量 a 。
+
+# 常见的3种变量
+Shell编程中变量分为三种，分别是系统变量、环境变量和用户变量，Shell变量名在定义时，首个字符必须为字母（a-z，A-Z），不能以数字开头，中间不能有空格，可以使用下划线（_），不能使用（-），也不能使用标点符号等。
+
+# 简单的变量介绍
+[root@keeplived_server~]# a=18
+[root@keeplived_server~]# echo $a
+18
+
+2.2 shell系统变量
+
+# Shell常见的变量之一系统变量，主要是用于对参数判断和命令返回值判断时使用，系统变量详解如下：
+
+$0 		当前脚本的名称；
+$n 		当前脚本的第n个参数,n=1,2,…9；
+$* 		当前脚本的所有参数(不包括程序本身)；
+$# 		当前脚本的参数个数(不包括程序本身)；
+$? 		令或程序执行完后的状态，返回0表示执行成功；
+$$ 		程序本身的PID号。
+////////////////////////////////////////////////////////
+-f	 	判断文件是否存在 eg: if [ -f filename ]；
+-d	 	判断目录是否存在 eg: if [ -d dir     ]；
+-eq		等于，应用于整型比较 equal；
+-ne		不等于，应用于整型比较 not equal；
+-lt		小于，应用于整型比较 letter；
+-gt		大于，应用于整型比较 greater；
+-le		小于或等于，应用于整型比较；
+-ge 	大于或等于，应用于整型比较；
+-a		双方都成立（and） 逻辑表达式 –a 逻辑表达式；
+-o		单方成立（or） 逻辑表达式 –o 逻辑表达式；
+-z		空字符串；
+-x      是否具有可执行权限
+||      单方成立；
+&&      双方都成立表达式。
+//////////////////////////////////////////////////////////////
+# break 和 continue 语句
+  break 是终止循环。
+  continue 是跳出当前循环。
+#示例 1：在死循环中，满足条件终止循环
+while true; do
+  let N++
+  if [ $N -eq 5 ]; then
+    break
+fi
+  echo $N
+done
+输出： 1 2 3 4
+///////////////////////////////////////////////////////////////
+#示例 2：举例子说明 continue 用法
+N=0
+while [ $N -lt 5 ]; do
+  let N++
+if [ $N -eq 3 ]; then
+  continue
+fi
+  echo $N
+done
+
+输出： 1 2 4
+///////////////////////////////////////////////////////////////
+# 打印 1-100 数字
+i=0
+while ((i<=100))
+do
+        echo  $i
+        i=`expr $i + 1`
+done
+///////////////////////////////////////////////////////////////
+[root@web-server01~/script]# vim login.sh 
+#!/bin/bash
+#Check File to change. 
+#By author rivers 2021-9-27
+USERS="hbs"
+while true
+do
+        echo "The Time is `date +%F-%T`"
+        sleep 10
+        NUM=`who|grep "$USERS"|wc -l`
+        if [[ $NUM -ge 1 ]];then
+                echo "The $USERS is login in system."
+        fi
+done
+///////////////////////////////////////////////////////////////
+[root@web-server01~/script]# vim httpd_start.sh 
+# check http server start|stop|starus
+# by author rivers on 2021-9-27
+while true
+do
+    echo -e "
+    \033[31m start \033[0m
+    \033[32m stop \033[0m 
+    \033[33m status \033[0m
+    \033[34m quit \033[0m 
+"
+read -p "请输入你的选择start|stop|quit：" char
+case $char in
+start)
+    systemctl start httpd && echo "httpd服务已经开启" || echo "开启失败"
+;;
+stop)
+    systemctl stop httpd && echo "httpd服务已经关闭" || echo "关闭失败"
+;;
+restart)
+    systemctl restart httpd && echo "httpd服务已经重启" || echo "重启失败
+"
+;;
+status)
+    systemctl status httpd && echo -e "
+        httpd 的服务状态
+  
+;;
+quit)
+////////////////////////////////////////////////////////////////////////////
+#select 是一个类似于 for 循环的语句
+#Select语句一般用于选择，常用于选择菜单的创建，可以配合PS3来做打印菜单的输出信息，其语法格式以select…in do开头，done结尾：
+
+select i in （表达式） 
+do
+语句
+done
+///////////////////////////////////////////////////////////////////////////
+# 选择mysql 版本
+#!/bin/bash
+# by author rivers on 2021-9-27
+PS3="Select a number: "
+while true; do
+select mysql_version in 5.1 5.6 quit;
+ do
+  case $mysql_version in
+  5.1)
+    echo "mysql 5.1"
+      break
+      ;;
+  5.6)
+    echo "mysql 5.6"
+       break
+       ;;
+  quit)
+    exit
+    ;;
+  *)
+    echo "Input error, Please enter again!"
+      break
+esac
+ done
+done
+///////////////////////////////////////////////////////////////////////////////
+# Shell允许将一组命令集或语句形成一个可用块，这些块称为Shell函数，Shell函数的用于在于只需定义一次，后期随时使用即可，无需在Shell脚本中添加重复的语句块，其语法格式以function name（）{开头，以}结尾。
+
+# Shell编程函数默认不能将参数传入（）内部，Shell函数参数传递在调用函数名称传递，例如name args1 args2。
+
+# 函数语法
+func() {
+command1
+command1
+……
+}
+fun  # 直接调用函数名
+# Shell 函数很简单，函数名后跟双括号，再跟双大括号。通过函数名直接调用，不加小括号。
+#!/bin/bash
+func() {
+VAR=$((1+1))
+return $VAR
+echo "This is a function."
+}
+func
+echo $?
+# bash test.sh 
+2
+///////////////////////////////////////////////////////////////////////////////
+# 数组是相同类型的元素按一定顺序排列的集合。
+格式：array=(元素 1 元素 2 元素 3 ...)
+用小括号初始化数组，元素之间用空格分隔。
+ 定义方法 1：初始化数组 array=(a b c)
+ 定义方法 2：新建数组并添加元素 array[下标]=元素
+ 定义方法 3：将命令输出作为数组元素array=($(command))
+////////////////////////////////////////////////////////////////////////////////
+[root@web-server01~/script]# vim xx.sh 
+#!/bin/bash
+#auto install apache
+#By author rivers 2021-09-27 
+#Httpd define path variable
+FILES=httpd-2.2.31.tar.bz2
+LES_DIR=httpd-2.2.31
+URL=http://mirrors.cnnic.cn/apache/httpd/
+PREFIX=/usr/local/apache2/
+function Apache_install ()
+{
+#Install httpd web server 
+if [[ "$1" -eq "1" ]];then
+        wget -c $URL/$FILES &&  tar -jxvf $FILES && cd $FILES_DIR &&./configure
+        if [ $? -eq 0 ];then
+                make && make install
+                echo -e "\n\033[32m--------------------------------------------
+                echo -e "\033[32mThe $FILES_DIR Server Install Success !\033[0m
+        else
+                echo -e "\033[32mThe $FILES_DIR Make or Make install ERROR,Plea
+                exit 0
+        fi
+fi
+}
+Apache_install 1
+# 调用函数，传参为1
+////////////////////////////////////////////////////////////////////////////////
+#方法 1：
+#!/bin/bash
+IP=(10.0.0.1 10.0.0.2 10.0.0.3)
+for ((i=0;i<${#IP[*]};i++)); do
+echo ${IP[$i]}
+done
+# bash test.sh
+10.0.0.1
+10.0.0.2
+10.0.0.3
+
+#方法 2：
+#!/bin/bash
+IP=(10.0.0.1 10.0.0.2 10.0.0.3)
+for   IP   in ${IP[*]}; do
+echo $IP
+done 
+/////////////////////////////////////////////////////////////////////////////////
+#!/bin/bash
+#Auto Backup Linux System Files
+#by author rivers on 2021-09-28
+
+SOURCE_DIR=(
+    $*
+)
+TARGET_DIR=/data/backup/
+YEAR=`date +%Y`
+MONTH=`date +%m`
+DAY=`date +%d`
+WEEK=`date +%u`
+A_NAME=`date +%H%M`
+FILES=system_backup.tgz
+CODE=$?
+if
+    [ -z "$*" ]；then
+    echo -e "\033[32mUsage:\nPlease Enter Your Backup Files or Directories\n--------------------------------------------\n\nUsage: { $0 /boot /etc}\033[0m"
+    exit
+fi
+#Determine Whether the Target Directory Exists
+if
+    [ ! -d $TARGET_DIR/$YEAR/$MONTH/$DAY ]；then
+    mkdir -p $TARGET_DIR/$YEAR/$MONTH/$DAY
+    echo -e "\033[32mThe $TARGET_DIR Created Successfully !\033[0m"
+fi
+#EXEC Full_Backup Function Command
+Full_Backup()
+{
+if
+    [ "$WEEK" -eq "7" ]；then
+    rm -rf $TARGET_DIR/snapshot
+    cd $TARGET_DIR/$YEAR/$MONTH/$DAY ；tar -g $TARGET_DIR/snapshot -czvf $FILES ${SOURCE_DIR[@]}
+    [ "$CODE" == "0" ]&&echo -e  "--------------------------------------------\n\033[32mThese Full_Backup System Files Backup Successfully !\033[0m"
+fi
+}
+#Perform incremental BACKUP Function Command
+Add_Backup()
+{
+   if
+        [ $WEEK -ne "7" ]；then
+        cd $TARGET_DIR/$YEAR/$MONTH/$DAY ；tar -g $TARGET_DIR/snapshot -czvf $A_NAME$FILES ${SOURCE_DIR[@]}
+        [ "$CODE" == "0" ]&&echo -e  "-----------------------------------------\n\033[32mThese Add_Backup System Files $TARGET_DIR/$YEAR/$MONTH/$DAY/${YEAR}_$A_NAME$FILES Backup Successfully !\033[0m"
+   fi
+}
+sleep 3 
+Full_Backup；Add_Backup
+///////////////////////////////////////////////////////////////////////////////
+cat <<EOF
+++++++++++++++++++++++++++++++++++++++++++++++
+++++++++Welcome to use system Collect+++++++++
+++++++++++++++++++++++++++++++++++++++++++++++
+EOF
+ip_info=`ifconfig |grep "Bcast"|tail -1 |awk '{print $2}'|cut -d: -f 2`
+cpu_info1=`cat /proc/cpuinfo |grep 'model name'|tail -1 |awk -F: '{print $2}'|sed 's/^ //g'|awk '{print $1,$3,$4,$NF}'`
+cpu_info2=`cat /proc/cpuinfo |grep "physical id"|sort |uniq -c|wc -l`
+serv_info=`hostname |tail -1`
+disk_info=`fdisk -l|grep "Disk"|grep -v "identifier"|awk '{print $2,$3,$4}'|sed 's/,//g'`
+mem_info=`free -m |grep "Mem"|awk '{print "Total",$1,$2"M"}'`
+load_info=`uptime |awk '{print "Current Load: "$(NF-2)}'|sed 's/\,//g'`
+mark_info='BeiJing_IDC'
+echo -e "\033[32m-------------------------------------------\033[1m"
+echo IPADDR:${ip_info}
+echo HOSTNAME:$serv_info
+echo CPU_INFO:${cpu_info1} X${cpu_info2}
+echo DISK_INFO:$disk_info
+echo MEM_INFO:$mem_info
+echo LOAD_INFO:$load_info
+echo -e "\033[32m-------------------------------------------\033[0m"
+echo -e -n "\033[36mYou want to write the data to the databases? \033[1m" ；read ensure
+
+if      [ "$ensure" == "yes" -o "$ensure" == "y" -o "$ensure" == "Y" ];then
+        echo "--------------------------------------------"
+        echo -e  '\033[31mmysql -uaudit -p123456 -D audit -e ''' "insert into audit_system values('','${ip_info}','$serv_info','${
+cpu_info1} X${cpu_info2}','$disk_info','$mem_info','$load_info','$mark_info')" ''' \033[0m '
+        mysql -uroot -p123456 -D test -e "insert into audit_system values('','${ip_info}','$serv_info','${cpu_info1} X${cpu_info2}
+','$disk_info','$mem_info','$load_info','$mark_info')"
+else
+        echo "Please wait，exit......"
+        exit
+fi
+///////////////////////////////////////////////////////////////////////////////////////////////
+[root@web-server01~/script]# vim lnmp.sh 
+#!/bin/bash
+#install lnmp
+#by author rivers on 2021-9-28
+
+# nginx 环境准备
+Nginx_url=https://nginx.org/download/nginx-1.20.1.tar.gz
+Nginx_prefix=/usr/local/nginx
+
+# mysql 环境准备
+Mysql_version=mysql-5.5.20.tar.gz
+Mysql_dir=mysql-5.5.20
+Mysql_url=https://downloads.mysql.com/archives/get/p/23/file/mysql-5.5.20.tar.gz
+Mysql_prefix=/usr/local/mysql/
+
+# php 环境准备
+Php_version=php-7.2.10.tar.gz
+Php_prefix=/usr/local/php-7.2.10/
+
+
+function nginx_install(){
+
+if [[ "$1" -eq "1" ]];then
+        if [ $? -eq 0 ];then
+                make && make install
+        fi
+
+fi
+}
+
+
+
+function mysql_install(){
+if [[ "$1" -eq "2" ]];then
+-DMYSQL_UNIX_ADDR=/tmp/mysql.sock \
+-DMYSQL_DATADIR=/data/mysql \
+-DSYSCONFDIR=/etc \
+-DMYSQL_USER=mysql \
+-DMYSQL_TCP_PORT=3306 \
+-DWITH_XTRADB_STORAGE_ENGINE=1 \
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \
+-DWITH_PARTITION_STORAGE_ENGINE=1 \
+-DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
+-DWITH_MYISAM_STORAGE_ENGINE=1 \
+-DWITH_READLINE=1 \
+-DENABLED_LOCAL_INFILE=1 \
+-DWITH_EXTRA_CHARSETS=1 \
+-DDEFAULT_CHARSET=utf8 \
+-DDEFAULT_COLLATION=utf8_general_ci \
+-DEXTRA_CHARSETS=all \
+                echo -e "\033[32mThe $Mysql_dir Server Install Success !\033[0m"
+        else
+                echo -e "\033[32mThe $Mysql_dir Make or Make install ERROR,Please Check......"
+                exit 0
+fi
+/bin/cp support-files/my-small.cnf  /etc/my.cnf
+/bin/cp support-files/mysql.server /etc/init.d/mysqld
+chmod +x /etc/init.d/mysqld
+chkconfig --add mysqld
+chkconfig mysqld on
+fi
+}
+
+
+function php_install(){
+if [[ "$1" -eq "3" ]];then
+        if [ $? -eq 0 ];then
+                make ZEND_EXTRA_LIBS='-liconv' && make install
+if [[ "$1" -eq "3" ]];then
+ wget $Php_url && tar xf $Php_version && cd $Php_dir && yum install   bxml2* bzip2* libcurl*  libjpeg* libpng* freetype* gmp* libm
+crypt* readline* libxslt* -y && ./configure --prefix=$Php_prefix --disable-fileinfo --enable-fpm --with-config-file-path=/etc --wi
+  -config-file-scan-dir=/etc/php.d --with-openssl --with-zlib --with-curl --enable-ftp --with-gd --with-xmlrpc --with-jpeg-dir --w
+ith-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt=/usr/local/libmcrypt --enable-zip --enable-
+mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --without-pear --enable-bcmath
+        if [ $? -eq 0 ];then
+                make ZEND_EXTRA_LIBS='-liconv' && make install
+                echo -e "\n\033[32m-----------------------------------------------\033[0m"
+                echo -e "\033[32mThe $Php_version Server Install Success !\033[0m"
+        else
+                echo -e "\033[32mThe $Php_version Make or Make install ERROR,Please Check......"
+                exit 0
+        fi
+fi
+}
+
+
+PS3="Please enter you select install menu:"
+select i in nginx mysql php quit
+do
+"lnmp.sh" 113L, 3516C written                                                                                   
+[root@web-server01~/script]# vim lnmp.sh 
+chkconfig --add mysqld
+chkconfig mysqld on
+fi
+}
+
+
+function php_install(){
+if [[ "$1" -eq "3" ]];then
+        if [ $? -eq 0 ];then
+                make ZEND_EXTRA_LIBS='-liconv' && make install
+                echo -e "\n\033[32m-----------------------------------------------\033[0m"
+                echo -e "\033[32mThe $Php_version Server Install Success !\033[0m"
+        else
+                echo -e "\033[32mThe $Php_version Make or Make install ERROR,Please Check......"
+                exit 0
+        fi
+fi
+}
+
+
+PS3="Please enter you select install menu:"
+select i in nginx mysql php quit
+do
+
+case $i in
+        nginx)
+        nginx_install 1
+        ;;
+        mysql)
+        mysql_install 2
+        ;;
+        php)
+        php_install 3
+        ;;
+        quit)
+        exit
+esac
+done
+
+
+
+
+

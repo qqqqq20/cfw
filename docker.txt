@@ -1,0 +1,317 @@
+镜像命令
+# 搜索镜像
+docker search 镜像名称
+# 搜索镜像，同时显示显示的结果，只显示10条，不加参数，默认显示25条
+docker search --limit 10 镜像名称
+docker  pull拉取镜像
+# 查看本地所有镜像
+docker images
+# 查看本地所有镜像，包括中间层（intermediate layers）。
+docker images -a
+# 只显示镜像的ID
+docker images -q
+# 参数也可以联合使用
+docker images -aq
+# 删除镜像
+docker rmi 镜像ID
+# 强制删除
+docker rmi -f 镜像ID
+docker rmi 镜像名称					 	 # 只会删除最新版本的镜像
+docker rmi 镜像名称:版本tag			# 删除指定版本的镜像
+docker rmi 镜像ID1 镜像ID2		 # 删除多个
+docker rmi -f $(docker images -qa)		# 删除所有镜像，慎用或不用，docker images -qa是获取到镜像的ID
+查看镜像容器数据卷的占用空间
+docker system df
+导入和导出镜像
+导出镜像docker save -o /path/to/your_image.tar your_image_name:tag
+导入镜像docker load -i /path/to/your_image.tar
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+容器命令
+启动容器# 启动容器，并指定名称
+docker run -it --name my-ubuntu ubuntu /bin/bash
+
+# 也可以不起名字，随机名字，新版本也可以不写/bin/bash
+docker run -it ubuntu
+
+解释一下上面的命令：
+
+docker run: Docker命令用于运行一个新容器。
+-it: 这是两个选项的组合。-i 代表交互模式，使容器保持打开状态并等待用户命令输入；-t 分配一个伪终端或终端，使输入可见。
+--name my-ubuntu: 这个选项给容器指定一个名称，名字你自己起，这里是my-ubuntu，该参数是可以省略的，省略后系统会随机生成一个名字。
+ubuntu: 这是要使用的镜像名称，即Ubuntu操作系统，使用的是最新版本，如果要使用指定的版本需要使用 镜像名称:版本tag，例如 ubuntu:18.0.2。
+/bin/bash: 这是在容器启动后要执行的命令。在这种情况下，它启动了Bash shell，允许你在容器内部进行交互式操作，其实这个是可以省略的，因为不加 /bin/bash，会启动一个默认的 shell。对于 Ubuntu 镜像，这个默认 shell 通常是 Bash shell。
+
+退出和进入容器
+退出容器# 直接退出容器，容器会停止
+exit   	
+# 退出容器，容器不会停止
+Ctrl + p + q  
+如果再想进入正在运行的容器，可以使用 docker exec 或 docker attach 命令：
+# 进入容器
+docker exec -it 容器ID或名称 /bin/bash
+# 进入容器
+docker attach 容器ID或名称
+
+查看容器
+# 查看运行中的容器
+docker ps
+# 查看所有容器，包括停止的
+docker ps -a
+# 查看最近创建的容器
+docker ps -l
+# 查看容器，只显示容器编号
+docker ps -q
+# 查看最近n个创建的容器
+docker ps -n 5	# 查看最近创建的5个容器
+
+停止容器
+# 停止容器
+docker stop 容器ID/名称
+# 强制停止容器
+docker kill 容器ID/名称
+
+启动已经停止的容器
+# 启动已经停止的容器
+docker start 容器ID/名称
+
+重启容器
+# 重启容器
+docker restart 容器ID/名称
+
+ 删除容器
+# 删除已停止的容器
+docker rm 容器ID/名称
+# 强制删除容器，运行中的也可以删除
+docker rm -f 容器ID/名称
+
+端口映射
+# 启动 redis 服务
+docker run -d -p 6379:6379 --name myredis redis
+-p 表示端口映射，前面的 6379 表示宿主机的端口号，后面的 6379 表示容器的端口号。
+有的容器需要映射多个端口，例如我们给前面的 Ubuntu 容器映射端口：
+docker run -it --name myUbuntu -p 80:80 -p 8080:8080 Ubuntu /bin/bash
+
+重启策略
+docker run -d -p 6379:6379 --restart=always --name myredis redis
+其中的 --restart 参数指定了重启的策略， --restart 可以设置为如下值：
+no：默认策略，在容器退出时不进行重启。
+always：无论容器退出状态如何，都会尝试重启容器。
+on-failure：只有在容器以非零状态码退出时才尝试重启容器。
+unless-stopped：在容器退出或守护进程重启时，始终重启容器，除非用户明确停止了容器。
+如果容器已经启动了，可以使用 update 命令修改容器的重启策略：
+docker update --restart=always <container_id>
+在上述命令中，将 <container_id> 替换为你想要修改的容器的实际 ID 或名称。
+
+查看容器日志
+# 查看容器日志
+docker logs 容器ID/名称
+
+查看容器信息
+# 查看容器详细信息
+docker inspect 容器ID/名称
+
+拷贝文件
+# 将宿主机的文件拷贝到容器
+docker cp 宿主机路径 容器ID:容器内路径
+# 将容器的文件拷贝到宿主机
+docker cp 容器ID:容器内路径 宿主机路径
+
+导入和导出容器
+导出
+导出可以使用 docker export 命令，将容器导出为一个 tar 文件。
+# 导出容器
+docker export 容器ID/名称 > 文件.tar
+导入
+导入可以使用 docker import 命令，将 tar 包中的内容创建为一个新的镜像。
+# 从tar包导入为镜像
+docker import 文件.tar 镜像名称:版本标签
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+其他命令
+
+Docker 服务相关的命令
+# 设置docker开机自启, 正常安装完docker都是开机自启的，所以一般不用执行。
+systemctl enable docker
+# 查看docker状态
+systemctl status docker
+# 停止docker
+systemctl stop docker
+# 启动docker
+systemctl start docker
+# 重启docker
+systemctl restart docker
+查看概要信息
+docker info
+查看帮助文档
+docker --help
+查看命令文档
+docker 具体命令 --help
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+容器数据卷(文件映射)
+
+什么是容器卷，为什么需要容器卷？
+
+我们在运行容器的时候，产生的数据都是保存在容器内部的。如果使用Docker来运行mysql容器，数据都保存在容器内部，此时删除容器，数据就全部没了！没了！了！比删库跑路还容易，简直离谱他妈给离谱开门——离谱到家了。
+
+所以需要容器卷，将主机的目录挂载到容器内部（宿主机目录相当于一个外部移动硬盘一样），将容器的目录与宿主机的目录进行映射，将数据保存到宿主机上，这样，即使容器被删除，挂载到容器卷中的数据仍然会被保留在宿主机上。使用容器卷既可以实现容器数据的持久化，也可以在容器间共享数据。
+
+目录挂载后，两个目录进行了映射，在宿主机对应目录进行操作，都会反应到容器内的对应目录中；同样，在容器内对挂载的目录进行操作，也会同步到宿主机上，两个文件夹之间的内容始终保持一致。将容器停止，然后修改宿主机的目录，重启容器，还是会将宿主机的内容同步到容器内部。
+
+Docker 提供了三种常见的挂载方式，分别是：绑定挂载（Bind Mounts）、卷挂载（Volume Mounts）和临时文件系统（tmpfs）挂载。下面分别介绍这三种挂载方式的使用。
+
+1.绑定挂载:意味着将宿主机上的目录或文件挂载到容器内部，这样容器就可以直接访问宿主机上的文件系统。这对于持久化配置文件、证书、日志文件等非常有用。
+# 容器卷使用-v参数
+docker run -it --privileged=true -v 宿主机目录:容器内目录 镜像名称
+# 例如，运行ubuntu并进行容器卷的挂载：
+docker run -it --privileged=true \
+-v /home/doubi/my-ubuntu/host_data:/root/docker_data \
+--name my-ubuntu ubuntu
+
+--privileged=true ：建议都添加 --privileged=true 参数来开启权限，否则可能出现 ls: cannot open directory .: Permission denied 的错误。使用该命令，容器内的root拥有真正的root权限，否则容器内的root在外部只是一个普通用户权限，所以导致容器内的root权限不够。
+-v /home/doubi/my-ubuntu/host_data:/root/docker_data ：表示将宿主机上的 /home/doubi/my-ubuntu/host_data 目录挂载到容器内的 /root/docker_data 目录，使两个目录进行映射。
+运行上面的命令后，如果宿主机没有 /home/doubi/my-ubuntu/host_data 目录，则会自动创建，如果容器内部没有 /root/docker_data 目录，也会自动创建，挂载的路径必须是绝对路径，如果容器内/root/docker_data 目录有内容，内容将被覆盖删除。
+-v 参数也是可以使用多个的，进行多个目录挂载的，例如：
+docker run -it --privileged=true \
+-v /home/doubi/my-ubuntu/host_data:/root/docker_data \
+-v /home/doubi/my-ubuntu/config:/root/config \
+--name my-ubuntu ubuntu
+
+2.卷挂载
+具名挂载:具名挂载（Named Volume）是指在创建容器时明确指定一个卷的名字，而不是使用匿名挂载。具名挂载允许你在不同的容器之间共享数据，并且可以在容器的整个生命周期中保持数据的持久化。
+下面运行 ubuntu 并使用卷挂
+docker run -it --privileged=true \
+-v ubuntu_data:/root/docker_data \
+--name my-ubuntu ubuntu
+
+ubuntu_data 就是容器卷的名称，使用卷挂载，docker 会查看 ubuntu_data 容器卷是否存在，如果不存在就会创建 ubuntu_data 容器卷。docker 会将容器中的目录映射到 ubuntu_data 容器卷。
+使用命令 docker volume ls 可以查看 docker 中存在的卷
+
+匿名挂载：匿名挂载（也称为无名挂载）是指挂载一个卷到容器中，但不指定宿主机上的源路径。匿名挂载通常用于创建一个临时文件系统，这个文件系统仅在容器运行时存在，当容器被删除时，匿名挂载的文件系统也会随之被删除。
+在上面使用命令进行容器卷挂载的时候，是指定了容器卷的名称。还有一种是匿名挂载，也就是只指定容器内部的目录，不指定宿主机的目录。
+docker run -it --privileged=true -v /root/docker_data --name my-ubuntu ubuntu
+
+临时文件系统挂载
+这种挂载方式，数据只存储在宿主机的内存中，不会写入到宿主机的文件系统中，当容器停止时，挂载的数据会被删除。
+例如，使用如下命令可以实现临时文件系统挂载：docker run --tmpfs /container/path image_name
+
+理解挂载 - 重要
+重新来说一下挂载，其实上面说的将宿主机和容器的目录进行映射是不准确的说法。
+例如我们在运行容器的时候，使用了绑定挂载，指定了 -v /home/doubi/my-ubuntu/data:/root/docker_data 。
+这表示将宿主机的 /home/doubi/my-ubuntu/host_data 目录挂载到容器内部的 /root/docker_data 目录，也就是容器内部的 /root/docker_data 目录变成了指向了宿主机的 /home/doubi/my-ubuntu/host_data 目录的一个链接，或快捷方式。在容器内部将数据保存到 /root/docker_data 目录，数据实际保存到的是宿主机的 /home/doubi/my-ubuntu/host_data 目录。
+所以在执行挂载的时候，如果容器内的 /root/docker_data 目录是非空的，那么目录中的文件将会丢失，因为 /root/docker_data 目录变成了一个链接，指向了宿主机的目录的 /home/doubi/my-ubuntu/host_data 目录，显示的自然是宿主机 /home/doubi/my-ubuntu/host_data 目录的内容，如果 /home/doubi/my-ubuntu/host_data 目录是空的，那么容器内的 /root/docker_data 目录也将变成空的。
+
+而卷挂载不一样：如果volume是空的而容器中的目录有内容，那么docker会将容器目录中的内容拷贝到volume中，但是如果volume中已经有内容，则会将容器中的目录覆盖。
+///////////////////////////////////////////////////////////////////////////////////////////////
+Dockerfile(制作镜像）
+制作镜像的方法主要有两种方式：
+使用 docker commit 命令；
+使用 Dockerfile 文件。
+但是使用 docker commit 命令很麻烦，每次都要进入容器修改容器然后提交。我们可以通过 Dockerfile 通过一条一条的指令和参数来构成脚本文件，通过脚本文件来生成镜像，这样就很方便。
+
+Dockerfile 常用命令
+
+1 FROM(FROM 指令指明构建的新镜像是基于哪个基础镜像，如果没有选择 tag，那么默认值为 latest)
+FROM <image>:<tag>
+
+2 LABEL(LABEL 指令用于向镜像添加元数据，提供关于镜像的描述信息。这些标签可以包含有关项目、维护者、版本、许可证等信息)
+LABEL <key>=<value> <key>=<value> <key>=<value> ..
+
+3 RUN(RUN 命令可以在构建镜像时执行命令。这个命令接收两种格式：Shell 和 Exec)
+shell形式
+RUN <command>(文件或软件)
+Exec形式
+在 Exec 形式中，命令是一个数组，指定了可执行文件及其参数。这种形式适用于避免 Shell 字符串处理的一些潜在问题，同时也提供了更直观的命令执行方式
+RUN ["apt", "update", "&&", "apt", "install", "-y", "vim"]
+
+4 COPY(COPY 指令可以拷贝文件或目录到镜像中。)
+COPY <src> <dest>
+# 将hello-springboot-0.0.1-SNAPSHOT.jar复制到镜像文件中，目标名称为app.jar
+COPY hello-springboot-0.0.1-SNAPSHOT.jar app.jar
+
+5 ADD(ADD 指令可以拷贝文件或目录到镜像中，类似于 COPY，但支持更多功能)
+ADD <src> <dest>
+
+6 WORKDIR(WORKDIR 命令用于设置工作目录，此后的 RUN、CMD、ENTRYPOINT、COPY 、AND 等命令将在这个工作目录下执行)
+WORKDIR 路径
+
+7 ENV(ENV 命令用于在构建镜像过程中设置环境变量，这些环境变量是一直存在于镜像中的)
+# 格式1
+ENV key value
+# 格式2：可以使用=
+ENV key1=value1 key2=value2
+# 设置一个名为 "WORK_HOME" 的环境变量
+ENV WORK_HOME /home/doubi
+# 引用WORK_HOME环境变量
+WORKDIR $WORK_HOME
+
+8 ARG(ARG 命令与 ENV 命令作用一样，和 ENV 命令不同的是：这些变量只在构建过程中有效，构建完成后不会被保留在最终的镜像中 。     构建过程中，ARG 定义的参数可以用于在 Dockerfile 中的各个指令中，并在 docker build 命令中被覆盖。它对于在构建时动态地传递参数非常有用)
+ARG key[=value]
+# 定义构建参数  
+ARG VERSION=latest  
+ARG BUILD_DATE  
+# 使用构建参数设置环境变量  
+ENV APP_VERSION=$VERSION  
+ENV BUILD_DATE=$BUILD_DATE 
+
+9 EXPOSE(EXPOSE 命令的作用就是对外暴漏端口。但是并不是打开端口，而是声明，实际还是在运行 docker run 命令的时候，通过 -p 参数指定)
+EXPOSE <port> [<port>/<protocol>...]
+# 暴露80端口
+EXPOSE 80
+# 暴露多个端口
+EXPOSE 80 443
+# 指定端口和协议
+EXPOSE 8080/tcp
+可以一次指定多个端口，或者指定多个端口和协议的组合
+
+10 CMD(CMD 命令用于为容器指定默认的执行命令或应用程序。当容器启动时，这个命令将被执行，可以用来启动容器中的应用程序。
+什么意思，是不是有点蒙？
+前面的 RUN 命令是在构建镜像的时候执行，也就是执行 docker build 命令的时候执行；而 CMD 命令是启动容器的时候执行，也就是执行 docker run 命令的时候执行)
+# Shell格式
+CMD <command>
+# Exec格式
+CMD ["参数1", "参数2", ...]
+
+11 ENTRYPOINT(ENTRYPOINT 命令用于指定容器启动时执行的命令，它与 CMD 命令有些相似。同样在一个 Dockerfile 中只能有一个 ENTRYPOINT 命令。如果在 Dockerfile 中定义了多个 ENTRYPOINT，则只有最后一个 ENTRYPOINT 命令会生效，而之前的将被忽略)
+# Shell格式
+ENTRYPOINT <command>
+# Exec格式
+ENTRYPOINT ["参数1", "参数2", ...]
+但是 ENTRYPOINT 和 CMD 有一些关键的区别。
+前面说到 CMD中定义的命令会被 docker run 之后的参数替换，但是ENTRYPOINT 命令不会。如果用户在运行容器时提供了命令，那么这些用户提供的命令将作为参数传递给 ENTRYPOINT 指定的命令
+
+12 VOLUME(VOLUME 命令用来做匿名挂载，在启动容器时忘记挂载数据卷，会自动挂载到匿名卷)
+# 方式1
+VOLUME <路径>
+# 方式2
+VOLUME <路径1> <路径2>
+# 方式3
+VOLUME ["<路径1>", "<路径2>"...]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://www.foooor.com/
