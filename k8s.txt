@@ -1,0 +1,256 @@
+Kubernetes (K8s) 核心概念及组件操作详解
+1. 集群 (Cluster)
+集群是 Kubernetes 的基本部署单元，由一组物理或虚拟机组成，用于运行容器化应用程序。集群包括一个或多个主节点 (Master Node) 和多个工作节点 (Worker Node)。
+
+相关组件
+主节点 (Master Node):
+
+API 服务器 (API Server): 集群的入口点，处理所有 API 请求。
+
+调度器 (Scheduler): 负责将 Pod 调度到合适的节点上。
+
+控制器管理器 (Controller Manager): 运行各种控制器进程，确保集群状态与期望状态一致。
+
+etcd: 分布式键值存储，用于存储集群的配置数据和状态。
+
+工作节点 (Worker Node):
+
+kubelet: 负责管理节点上的 Pod，与 API 服务器通信。
+
+kube-proxy: 负责网络代理，维护节点上的网络规则。
+
+容器运行时 (Container Runtime): 如 Docker、containerd，负责运行容器。
+
+操作
+查看集群信息:
+kubectl cluster-info
+查看节点:
+kubectl get nodes
+查看节点详细信息:
+kubectl describe node <node-name>
+/////////////////////////////////////////////////////////////////////////////////
+2. 节点 (Node)
+节点是集群中的单个服务器，可以是物理机或虚拟机。节点分为两种类型：
+
+主节点 (Master Node): 运行控制平面组件，负责集群的管理和调度。
+
+工作节点 (Worker Node): 运行应用程序的容器，由主节点调度。
+
+操作
+标记节点为不可调度:
+kubectl cordon <node-name>
+标记节点为可调度：
+kubectl uncordon <node-name>
+驱逐节点上的所有 Pod:
+kubectl drain <node-name> --ignore-daemonsets
+////////////////////////////////////////////////////////////////////////////////
+3. Pod
+Pod 是 Kubernetes 中最小的部署单元，包含一个或多个紧密耦合的容器。Pod 中的容器共享网络和存储资源，通常用于运行同一应用程序的不同组件。
+
+相关组件
+容器 (Container): 运行在 Pod 中的应用程序实例。
+
+卷 (Volume): 提供持久化存储，供 Pod 中的容器使用。
+
+Init 容器: 在主容器启动前运行的容器，用于初始化任务。
+
+操作
+创建 Pod:
+kubectl create -f pod.yaml
+查看 Pod:
+kubectl get pods
+查看 Pod 详细信息:
+kubectl describe pod <pod-name>
+进入 Pod 容器:
+kubectl exec -it <pod-name> -- /bin/
+查看 Pod 日志:
+kubectl logs <pod-name>
+删除 Pod:
+kubectl delete pod <pod-name>
+////////////////////////////////////////////////////////////////////////////////
+4. 控制平面 (Control Plane)
+控制平面是 Kubernetes 集群的管理中枢，负责管理集群的状态和调度任务。控制平面包括以下组件：
+
+API 服务器 (API Server): 集群的入口点，处理所有 API 请求。
+
+调度器 (Scheduler): 负责将 Pod 调度到合适的节点上。
+
+控制器管理器 (Controller Manager): 运行各种控制器进程，确保集群状态与期望状态一致。
+
+etcd: 分布式键值存储，用于存储集群的配置数据和状态。
+
+操作
+查看 API 服务器状态:
+kubectl get componentstatuses
+查看调度器日志:
+kubectl logs <scheduler-pod> -n kube-system
+查看控制器管理器日志:
+kubectl logs <controller-manager-pod> -n kube-system
+/////////////////////////////////////////////////////////////////////////////////
+5. API 服务器 (API Server)
+API 服务器是 Kubernetes 集群的入口点，处理所有 API 请求。API 服务器负责验证和处理请求，并将结果存储在 etcd 中。
+
+操作
+查看 API 资源:
+kubectl api-resources
+查看 API 版本:
+kubectl api-versions
+////////////////////////////////////////////////////////////////////////////////////
+6. 调度器 (Scheduler)
+调度器负责将 Pod 调度到合适的节点上。调度器根据资源需求、节点状态和调度策略选择最佳节点。
+
+操作
+查看调度器日志:
+kubectl logs <scheduler-pod> -n kube-system
+////////////////////////////////////////////////////////////////////////////////////
+7. 控制器管理器 (Controller Manager)
+控制器管理器运行各种控制器进程，确保集群状态与期望状态一致。常见的控制器包括：
+
+副本控制器 (ReplicaSet Controller): 确保指定数量的 Pod 副本在任何时候都处于运行状态。
+
+部署控制器 (Deployment Controller): 管理部署的滚动更新和回滚。
+
+服务控制器 (Service Controller): 管理服务的创建和删除。
+
+操作
+查看控制器管理器日志:
+kubectl logs <controller-manager-pod> -n kube-system
+//////////////////////////////////////////////////////////////////////////////////////
+8. etcd
+etcd 是一个分布式键值存储，用于存储 Kubernetes 集群的配置数据和状态。etcd 提供高可用性和一致性，确保集群的可靠性和稳定性。
+
+操作
+查看 etcd 状态:
+kubectl get componentstatuses
+查看 etcd 数据:
+ETCDCTL_API=3 etcdctl --endpoints=<etcd-endpoints> --cacert=<ca-cert> --cert=<client-cert> --key=<client-key> get / --prefix --keys-only
+//////////////////////////////////////////////////////////////////////////////////////
+9. 服务 (Service)
+服务定义一组 Pod 的逻辑集合和访问它们的策略。服务提供稳定的网络端点，使 Pod 可以被外部访问。
+
+相关组件
+ClusterIP: 集群内部使用的 IP 地址，仅在集群内部可访问。
+
+NodePort: 在每个节点上开放一个端口，外部可以通过节点 IP 和端口访问服务。
+
+LoadBalancer: 使用云提供商的负载均衡器，外部可以通过负载均衡器访问服务。
+
+ExternalName: 将服务映射到外部 DNS 名称。
+
+操作
+创建服务:
+kubectl create -f service.yaml
+查看服务:
+kubectl get services
+查看服务详细信息:
+kubectl describe service <service-name>
+删除服务:
+kubectl delete service <service-name>
+/////////////////////////////////////////////////////////////////////////////////////
+10. 标签 (Label)
+标签是键值对，用于标识和选择资源。标签可以附加到任何 Kubernetes 资源（如 Pod、服务、部署），并用于组织和选择资源。
+
+操作
+添加标签:
+kubectl label pod <pod-name> key=value
+查看标签:
+kubectl get pods --show-labels
+根据标签选择资源:
+kubectl get pods -l key=value
+删除标签:
+kubectl label pod <pod-name> key-
+/////////////////////////////////////////////////////////////////////////////////////
+11. 命名空间 (Namespace)
+命名空间用于将集群资源划分为多个虚拟集群。命名空间提供资源隔离，使多个团队可以在同一个集群中工作而不互相干扰。
+
+操作
+创建命名空间:
+kubectl create namespace <namespace-name>
+查看命名空间:
+kubectl get namespaces
+在命名空间中创建资源:
+kubectl create -f resource.yaml -n <namespace-name>
+删除命名空间:
+kubectl delete namespace <namespace-name>
+//////////////////////////////////////////////////////////////////////////////////////////
+12. 部署 (Deployment)
+部署定义 Pod 和 ReplicaSet 的期望状态，支持滚动更新和回滚。部署用于管理应用程序的生命周期，确保应用程序的高可用性和可扩展性。
+
+相关组件
+ReplicaSet: 确保指定数量的 Pod 副本在任何时候都处于运行状态。
+
+滚动更新策略: 定义更新 Pod 的方式，如滚动更新、蓝绿部署。
+
+回滚策略: 定义回滚到之前版本的方式。
+
+操作
+创建部署:
+kubectl create -f deployment.yaml
+查看部署:
+kubectl get deployments
+查看部署详细信息:
+kubectl describe deployment <deployment-name>
+扩展部署:
+kubectl scale deployment <deployment-name> --replicas=<number>
+更新部署:
+kubectl set image deployment/<deployment-name> <container-name>=<new-image>
+回滚部署:
+kubectl rollout undo deployment/<deployment-name>
+删除部署:
+kubectl delete deployment <deployment-name>
+///////////////////////////////////////////////////////////////////////////////////////////
+13. ReplicaSet
+ReplicaSet 确保指定数量的 Pod 副本在任何时候都处于运行状态。ReplicaSet 是 Deployment 的基础，用于管理 Pod 的副本数量。
+
+操作
+查看 ReplicaSet:
+kubectl get replicasets
+查看 ReplicaSet 详细信息:
+kubectl describe replicaset <replicaset-name>
+删除 ReplicaSet:
+kubectl delete replicaset <replicaset-name>
+//////////////////////////////////////////////////////////////////////////////////////////
+14. ConfigMap 和 Secret
+ConfigMap 和 Secret 用于存储配置数据和敏感信息，供 Pod 使用。ConfigMap 存储非敏感配置数据，Secret 存储敏感信息（如密码、密钥、证书）。
+
+操作
+创建 ConfigMap:
+kubectl create configmap <configmap-name> --from-file=<file>
+查看 ConfigMap:
+kubectl get configmaps
+查看 ConfigMap 详细信息:
+kubectl describe configmap <configmap-name>
+创建 Secret:
+kubectl create secret generic <secret-name> --from-file=<file>
+查看 Secret:
+kubectl get secrets
+查看 Secret 详细信息:
+kubectl describe secret <secret-name>
+/////////////////////////////////////////////////////////////////////////////////////////////
+15. 持久卷 (Persistent Volume) 和持久卷声明 (Persistent Volume Claim)
+持久卷 (PV) 和 持久卷声明 (PVC) 提供持久化存储，独立于 Pod 生命周期。PV 是集群中的存储资源，PVC 是 Pod 对存储资源的请求。
+
+相关组件
+存储类 (StorageClass): 定义不同类型的存储，如 SSD、HDD。
+
+卷插件 (Volume Plugin): 支持多种存储后端，如 NFS、Ceph、AWS EBS。
+
+操作
+创建 PV:
+kubectl create -f pv.yaml
+查看 PV:
+kubectl get pv
+查看 PV 详细信息:
+kubectl describe pv <pv-name>
+创建 PVC:
+kubectl create -f pvc.yaml
+查看 PVC:
+kubectl get pvc
+查看 PVC 详细信息:
+kubectl describe pvc <pvc-name>
+删除 PV:
+kubectl delete pv <pv-name>
+删除 PVC:
+kubectl delete pvc <pvc-name>
+总结
+Kubernetes 的核心概念涵盖了集群管理、资源调度、服务发现、配置管理、存储管理等多个方面。理解这些概念及其相互关系，并掌握相关组件的操作，将有助于你更好地设计和运维 Kubernetes 集群。
